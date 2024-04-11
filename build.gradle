@@ -1,0 +1,128 @@
+buildscript {
+    def config = new Properties()
+    file('build.properties').withInputStream(config.&load)
+    project.ext.config = config
+    project.ext.buildDate = new Date()
+
+    repositories {
+        mavenCentral()
+        google()
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+archivesBaseName = config.project_id
+group = config.project_group
+version = "${config.project_version}.${(System.getenv("CI_PIPELINE_IID") ?: 0)}"
+sourceCompatibility = config.java_version
+targetCompatibility = config.java_version
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(config.java_version as int)
+    }
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    implementation group: 'org.jetbrains', name: 'annotations', version: config.annotations_version
+}
+
+def commonManifest = {
+    attributes([ // @formatter:off
+        "Specification-Title"     : config.project_id,
+        "Specification-Vendor"    : "Karma Krafts",
+        "Specification-Version"   : project.version,
+        "Implementation-Title"    : config.project_id,
+        "Implementation-Version"  : project.version,
+        "Implementation-Vendor"   : "Karma Krafts",
+        "Implementation-Timestamp": buildDate.format("yyyy-MM-dd'T'HH:mm:ssZ")
+    ]) // @formatter:on
+}
+
+jar {
+    archiveClassifier = 'slim'
+    manifest commonManifest
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    sourceCompatibility = config.java_version
+    targetCompatibility = config.java_version
+}
+
+tasks.withType(Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+}
+
+publishing {
+    repositories {
+        if (System.getenv('MAVEN_PASSWORD')) {
+            maven {
+                url "https://nexus.covers1624.net/repository/karmakrafts-releases/"
+
+                credentials {
+                    username 'kitsunealex'
+                    password System.getenv('MAVEN_PASSWORD')
+                }
+            }
+        }
+    }
+    publications {
+        InvKeeper(MavenPublication) {
+            groupId project.group
+            artifactId project.archivesBaseName
+            version project.version
+            
+            artifact jar
+            artifact sourcesJar
+    
+            pom {
+                name = archivesBaseName
+                description = archivesBaseName
+                //The publish plugin doesnt like GString's here apparently..
+                url = "https://git.karmakrafts.dev/kk/${config.project_id}".toString()
+
+                scm {
+                    url = "https://git.karmakrafts.dev/kk/${config.project_id}".toString()
+                }
+
+                issueManagement {
+                    system = 'gitlab'
+                    url = "https://git.karmakrafts.dev/kk/${config.project_id}/issues".toString()
+                }
+
+                licenses {
+                    license {
+                        name = "The MIT License"
+                        url = "https://git.karmakrafts.dev/kk/${config.project_id}/-/blob/master/LICENSE"
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'kitsunealex'
+                        name = 'KitsuneAlex'
+                    }
+                }
+            }
+        }
+    }
+}
