@@ -47,7 +47,7 @@ def commonManifest = {
 }
 
 jar {
-    archiveClassifier = 'slim'
+    archiveClassifier = ''
     manifest commonManifest
 }
 
