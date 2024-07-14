@@ -21,6 +21,20 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
+}
+
+eclipse {
+    classpath {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
+}
+
 val projectPath: Path = project.projectDir.toPath()
 val buildConfig: Properties = Properties().apply {
     Path("build.properties").inputStream(StandardOpenOption.READ).use(::load)
