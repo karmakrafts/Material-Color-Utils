@@ -30,7 +30,7 @@ val buildTime: Instant = Instant.now()
 
 version = "${libs.versions.materialColorUtils.get()}.$buildNumber"
 group = buildConfig["group"] as String
-base.archivesName = "material-color-util"
+base.archivesName = "material-color-utils"
 
 repositories {
     mavenCentral()
