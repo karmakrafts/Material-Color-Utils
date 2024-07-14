@@ -55,6 +55,14 @@ tasks {
         }
     }
 
+    val classes by getting
+
+    val sourcesJar = create<Jar>("sourcesJar") {
+        from(sourceSets.main.get().allSource)
+        dependsOn(classes)
+        archiveClassifier = "sources"
+    }
+
     System.getenv("CI_API_V4_URL")?.let { apiUrl ->
         publishing {
             repositories {
@@ -78,16 +86,17 @@ tasks {
                     version = project.version as String
 
                     artifact(jar)
+                    artifact(sourcesJar)
 
                     pom {
                         name = artifactId
-                        url = "https://git.karmakrafts.dev/kk/material-color-utils"
+                        url = "https://git.karmakrafts.dev/kk/${project.name}"
                         scm {
                             url = this@pom.url
                         }
                         issueManagement {
                             system = "gitlab"
-                            url = "https://git.karmakrafts.dev/kk/material-color-utils/issues"
+                            url = "https://git.karmakrafts.dev/kk/${project.name}/issues"
                         }
                         licenses {
                             license {
