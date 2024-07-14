@@ -1,9 +1,10 @@
+import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
-import java.nio.file.Path
-import java.time.Instant
 
 plugins {
     eclipse
@@ -42,6 +43,18 @@ dependencies {
 }
 
 tasks {
+    jar {
+        manifest.attributes.apply {
+            this["Specification-Title"] = "Material Color Utils"
+            this["Specification-Vendor"] = "Google LLC"
+            this["Specification-Version"] = "1"
+            this["Implementation-Title"] = "material-color-utils"
+            this["Implementation-Vendor"] = "Karma Krafts"
+            this["Implementation-Version"] = project.version
+            this["Implementation-Timestamp"] = SimpleDateFormat.getDateTimeInstance().format(Date.from(buildTime))
+        }
+    }
+
     System.getenv("CI_API_V4_URL")?.let { apiUrl ->
         publishing {
             repositories {
